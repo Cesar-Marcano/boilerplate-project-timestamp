@@ -58,8 +58,6 @@ app.get('/api/:date?', function (req, res) {
         date = new Date(parseInt(dateParam));
         break;
       case 'malformed-string':
-        console.log('-> Invalid date');
-        console.log(identifyDateType(dateParam));
         return res.status(400).json({ error: 'Invalid Date' });
     }
   }
