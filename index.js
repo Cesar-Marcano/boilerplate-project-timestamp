@@ -18,6 +18,28 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
+function identifyDateType(str) {
+  const num = Number(str);
+  if (!isNaN(num) && Number.isInteger(num) && num > 0) {
+    const dateFromTimestamp = new Date(num);
+
+    if (!isNaN(dateFromTimestamp)) {
+      return 'timestamp';
+    }
+  }
+
+  const iso8601Regex = /^\d{4}-\d{2}-\d{2}$/;
+  if (iso8601Regex.test(str)) {
+    const dateFromISO = new Date(str);
+
+    if (!isNaN(dateFromISO)) {
+      return 'iso-date';
+    }
+  }
+
+  return 'malformed-string';
+}
+
 // your first API endpoint...
 app.get('/api/:date?', function (req, res) {
   var dateParam = req.params.date;
@@ -25,17 +47,21 @@ app.get('/api/:date?', function (req, res) {
 
   if (!dateParam) {
     date = new Date();
+  } else if (!isNaN(new Date(dateParam).getTime())) {
+    date = new Date(dateParam);
   } else {
-    const timestamp = Date.parse(dateParam);
-    if (!isNaN(timestamp)) {
-      date = new Date(timestamp);
-    } else {
-      date = new Date(dateParam);
+    switch (identifyDateType(dateParam)) {
+      case 'iso-date':
+        date = new Date(dateParam);
+        break;
+      case 'timestamp':
+        date = new Date(parseInt(dateParam));
+        break;
+      case 'malformed-string':
+        console.log('-> Invalid date');
+        console.log(identifyDateType(dateParam));
+        return res.status(400).json({ error: 'Invalid Date' });
     }
-  }
-
-  if (!date.getTime()) {
-    return res.status(400).json({ error: 'Invalid Date' });
   }
 
   res.json({ unix: date.getTime(), utc: date.toUTCString() });
