@@ -26,9 +26,9 @@ app.get('/api/:date?', function (req, res) {
   if (!dateParam) {
     date = new Date();
   } else {
-    const parsedTimestamp = parseInt(dateParam);
-    if (!isNaN(parsedTimestamp)) {
-      date = new Date(parsedTimestamp);
+    const timestamp = Date.parse(dateParam);
+    if (!isNaN(timestamp)) {
+      date = new Date(timestamp);
     } else {
       date = new Date(dateParam);
     }
